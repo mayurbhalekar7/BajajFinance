@@ -21,59 +21,47 @@ import com.EnquiryModule.exception.EnquiryNotFoundException;
 import com.EnquiryModule.model.Enquiry;
 import com.EnquiryModule.serviceI.EnquiryServiceI;
 
+import jakarta.validation.Valid;
+
 
 @RestController
 public class EnquiryController {
- 
+
 	@Autowired
 	EnquiryServiceI enqs;
-	
+
 	private static Logger log = LoggerFactory.getLogger(EnquiryController.class);
-	
-	@GetMapping("/")
-	public String preLogin()
-	{
-		return "This is enquiry module";
-	}
-	
+
 	@PostMapping("/addEnquiry")
-	public ResponseEntity<String> addEnquiry(@RequestBody Enquiry eq)
+	public ResponseEntity<String> addEnquiry(@Valid @RequestBody Enquiry eq)
 	{ 
 		ResponseEntity<String> rs=new ResponseEntity<String>("Send your Enquiry successfully...",HttpStatus.CREATED);
-		
-		
-			
 		enqs.addEnquiry(eq);
 		return rs;
-		
 	}
-	
+
 	@GetMapping("/getAllEnquiries")
 	public ResponseEntity<List<Enquiry>> getAllEnquiry()
 	{
 		log.info("Getting all enquiry");
-		List<Enquiry> enqList = enqs.getAllEnquiries();
+		List<Enquiry> enqList = enqs.getAllEnquiries("pending");
 		ResponseEntity<List<Enquiry>> elist=new ResponseEntity<List<Enquiry>>(enqList, HttpStatus.OK);
 		return elist;
 	}
-	  
-	@GetMapping("/getEnquriryById/{enquiryId}")
-	public ResponseEntity<Enquiry> getEnquriryById(@PathVariable("enquiryId") int enquiryId)
+
+	@GetMapping("/getEnquiryByEmail/{email}")
+	public ResponseEntity<Enquiry> getEnquiryByEmail(@PathVariable("email") String email)
 	{
-		Optional<Enquiry> enq=enqs.getEnquriryById(enquiryId);
+		Optional<Enquiry> enq=enqs.getEnquiryByEmail(email);
 		if(enq.isPresent())
-			
 		{
 			return new ResponseEntity<>(enq.get(), HttpStatus.OK);
 		}
 		else
 		{
-			
 			throw new EnquiryNotFoundException("Invalid Enquiry Id");
 		}
-		
 	}
-	
 
 	@PutMapping("/updateEnquiry/{enquiryId}")
 	public ResponseEntity<String> updateEnquiry(@PathVariable("enquiryId") int eid,@RequestBody Enquiry eq)
@@ -81,7 +69,7 @@ public class EnquiryController {
 		Optional<Enquiry> enq=enqs.getEnquriryById(eid);
 		if(enq.isPresent())
 		{
-			enqs.updateEnquiry(eid,eq);
+			enqs.updateEnquiry(eq);
 			ResponseEntity<String> rs=new ResponseEntity<String>("Your Enquiry Updated...",HttpStatus.OK);
 			return rs;
 		}
@@ -90,51 +78,75 @@ public class EnquiryController {
 			throw new EnquiryNotFoundException("Invalid Enquiry Id");
 		}
 	}
-	  @DeleteMapping("/deleteEnquiry/{enquiryId}") 
+	@DeleteMapping("/deleteEnquiry/{enquiryId}") 
 	public  ResponseEntity<String> deleteEnquiry(@PathVariable("enquiryId") int eid)
 	{
-		  Optional<Enquiry> enq=enqs.getEnquriryById(eid);
-			if(enq.isPresent())
-			{
-				enqs.deleteEnquiry(eid);
-				ResponseEntity<String> rs=new ResponseEntity<String>("Your Enquiry deleted...",HttpStatus.OK);
-				return rs;
-			}
-			else
-			{
-				throw new EnquiryNotFoundException("Invalid Enquiry Id");
-			}
-	}
-	  
-	//Api written by mayur bhalekar 04-08-2024 for get loan status for getting loan status from enquirymodule
-	  @GetMapping("/getEnquiryByLoanStatus/{loanStatus}")
-		public ResponseEntity<List<Enquiry>> getEnquiryByLoanStatus(@PathVariable("loanStatus") String loanStatus)
+		Optional<Enquiry> enq=enqs.getEnquriryById(eid);
+		if(enq.isPresent())
 		{
-			Optional<List<Enquiry>> enq=enqs.getEnquiryByLoanStatus(loanStatus);
-			if(enq.get().size()>0)
-			{
-				return new ResponseEntity<>(enq.get(), HttpStatus.OK);
-			}
-			else
-			{
-				throw new EnquiryNotFoundException("Not a single loan status found...");
-			}
+			enqs.deleteEnquiry(eid);
+			ResponseEntity<String> rs=new ResponseEntity<String>("Your Enquiry deleted...",HttpStatus.OK);
+			return rs;
 		}
-	//Api written by mayur bhalekar 04-08-2024 to forward enquiry to Operational Manager
-	  @PutMapping("/updateEnquiryStatus/{enquiryId}")
-	  public ResponseEntity<String> updateEnquiryStatus(@PathVariable("enquiryId") int enquiryId,@RequestBody Enquiry eq)
-	  {
-		  Optional<Enquiry> enq=enqs.getEnquriryById(enquiryId);
-			if(enq.isPresent())
+		else
+		{
+			throw new EnquiryNotFoundException("Invalid Enquiry Id");
+		}
+	}
+
+	
+	@GetMapping("/getEnquiryByLoanStatus/{loanStatus}")
+	public ResponseEntity<List<Enquiry>> getEnquiryByLoanStatus(@PathVariable("loanStatus") String loanStatus)
+	{
+		Optional<List<Enquiry>> enq=enqs.getEnquiryByLoanStatus(loanStatus);
+		if(enq.get().size()>0)
+		{
+			return new ResponseEntity<>(enq.get(), HttpStatus.OK);
+		}
+		else
+		{
+			throw new EnquiryNotFoundException("Not a single Enquiry found...");
+		}
+	}
+	
+/*	@PutMapping("/enquiryForwardToOE")
+	public ResponseEntity<String> enquiryForwardToOE(@RequestBody Enquiry eq)
+	{
+		Optional<Enquiry> enq=enqs.getEnquriryById(eq.getEnquiryId());
+		if(enq.isPresent())
+		{
+			if(enq.get().getEnquiryStatus().equals("pending"))
 			{
 				eq.setEnquiryStatus("f2oe");
-				enqs.updateEnquiryStatus(enquiryId,eq);
-				ResponseEntity<String> rs=new ResponseEntity<String>("Enquiry Forward to Operational Manager...",HttpStatus.OK);
+				enqs.enquiryForwardToOE(eq);
+				ResponseEntity<String> rs=new ResponseEntity<String>("Enquiry Forward to Operational Executive...",HttpStatus.OK);
 				return rs;
 			}
 			else
 			{
-				throw new EnquiryNotFoundException("Invalid Enquiry Id");
+				ResponseEntity<String> rs=new ResponseEntity<String>("Enquiry Already Forwarded...",HttpStatus.ALREADY_REPORTED);
+				return rs;
 			}
-	  }
+		}
+		else
+		{
+			throw new EnquiryNotFoundException("Invalid Enquiry Id");
+		}
+	}*/
+	@GetMapping("/enquiryForwardToOE/{email}")
+	public ResponseEntity<String> enquiryForwardToOE(@PathVariable("email") String email) 
+	{
+		Optional<Enquiry> enq=enqs.getEnquiryByEmail(email);
+		if(enq.get().getEnquiryStatus().equals("pending"))
+		{
+			enq.get().setEnquiryStatus("f2oe");
+			enqs.enquiryForwardToOE(enq.get());
+			ResponseEntity<String> rs=new ResponseEntity<String>("Enquiry Forward to Operational Executive...",HttpStatus.OK);
+			return rs;
+		}
+		else
+		{
+			throw new EnquiryNotFoundException("Invalid Enquiry email or status is not pending");
+		}
+	}
 }
