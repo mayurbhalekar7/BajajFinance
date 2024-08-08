@@ -21,7 +21,4 @@ public class Cibil {
 	private Date cibilDate;
 	
 	private  String cibilStatus;
-	
-	
-
 }
