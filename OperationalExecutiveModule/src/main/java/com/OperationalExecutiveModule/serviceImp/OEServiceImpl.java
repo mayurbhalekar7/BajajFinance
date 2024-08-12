@@ -10,7 +10,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.OperationalExecutiveModule.model.Customer;
 import com.OperationalExecutiveModule.model.Enquiry;
+import com.OperationalExecutiveModule.repository.CustomerRepository;
 import com.OperationalExecutiveModule.repository.OERepository;
 import com.OperationalExecutiveModule.serviceI.OEServiceI;
 
@@ -19,6 +21,9 @@ public class OEServiceImpl implements OEServiceI {
 
 	@Autowired
 	OERepository or;
+	
+	@Autowired
+	CustomerRepository cr;
 	
 	@Autowired
 	JavaMailSender sender;
@@ -53,7 +58,7 @@ public class OEServiceImpl implements OEServiceI {
 					if(cibil>650)
 					{
 						  eq.getCibil().setCibilStatus("good");
-						  eq.setLoanStatus("approved");
+						  eq.setLoanStatus("pending");
 						  message.setText("Hello,"+eq.getFirstName()+" "+eq.getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
 						  +eq.getCibil().getCibilScore()+", so your cibil status is good and your Loan Status is approved."+
 						   "\n\nImportant documents for Loan:\n"
@@ -73,7 +78,7 @@ public class OEServiceImpl implements OEServiceI {
 					else
 						{
 						  eq.getCibil().setCibilStatus("not good");
-						  eq.setLoanStatus("not approved");
+						  eq.setLoanStatus("rejected");
 						  message.setText("Hello,"+eq.getFirstName()+" "+eq.getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
 						  +eq.getCibil().getCibilScore()+", so your cibil status is not good and your Loan Status is not approved."+
 						  "\n\n\n Thanks & Regards,\n Bajaj Finance Team.");
@@ -120,6 +125,43 @@ public class OEServiceImpl implements OEServiceI {
 	public List<Enquiry> getEnquiry() {
 		
 		return or.getByEnquiryStatusAndCibilStatus("f2oe","good");
+	}
+
+	@Override
+	public List<Customer> getCustomer() {
+
+		return cr.getByVerifiStatusPendingCustomer("pending");
+	}
+
+	@Override
+	public Optional<Customer> getCustomerByID(int cid) {
+		
+		Optional<Customer> op=cr.findById(cid);
+		return op;
+	}
+
+	@Override
+	public void forDocumentVerification(Customer c) {
+		
+		c.getVerification().setStatus("Verified");
+		cr.save(c);
+	}
+
+	@Override
+	public void forwordedToCM(Customer c) {
+		
+		c.getEnquiry().setEnquiryStatus("f2cm");
+		
+		SimpleMailMessage message=new SimpleMailMessage();
+		Enquiry eq=c.getEnquiry();
+		message.setTo(c.getEnquiry().getEmail());
+		message.setSubject("Bajaj Finance Home Loan Enquiry Status");
+		message.setText("Hello,"+eq.getFirstName()+" "+eq.getLastName()+",\nYour Home Loan Enquiry Status is forworded to Credential Manager."+
+		"we will update you soon."+
+		"\n\n\n Thanks & Regards,\n Bajaj Finance Team.");
+		
+		sender.send(message);
+		cr.save(c);
 	}
 	
 	

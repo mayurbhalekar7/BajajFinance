@@ -1,5 +1,6 @@
 package com.OperationalExecutiveModule.controller;
 
+import java.lang.StackWalker.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.OperationalExecutiveModule.exception.CustomerNotFoundException;
 import com.OperationalExecutiveModule.exception.EnquiryNotFountException;
+import com.OperationalExecutiveModule.model.Customer;
 import com.OperationalExecutiveModule.model.Enquiry;
 import com.OperationalExecutiveModule.serviceI.OEServiceI;
 
@@ -111,9 +114,69 @@ public class OEController {
 	}*/
 	
 	@GetMapping("/getByF2oeAndGoodEnquiry")
-	public List<Enquiry> getByF2oeAndGoodEnquiry()
-	{
-	   	List<Enquiry> elist=oei.getEnquiry();
-	   	return elist;
+	public List<Enquiry> getByF2oeAndGoodEnquiry() {
+		List<Enquiry> elist = oei.getEnquiry();
+		return elist;
 	}
+
+	@GetMapping("/getAllVerifiPendingCustomers")
+	public List<Customer> getCustomer() 
+	{
+		List<Customer> clist=oei.getCustomer();
+		return clist;
+	}
+	
+	
+	@GetMapping("documentVerification/{customerId}")
+	public ResponseEntity<String> documentVerification(@PathVariable("customerId") int cId)
+	{
+		Optional<Customer> op=oei.getCustomerByID(cId);
+	    if(op.isPresent())
+	    {
+	    	Customer c=op.get();
+	    	if(c.getVerification().getStatus().equals("pending"))
+	    	{
+	    		oei.forDocumentVerification(c);
+	    		ResponseEntity<String> re=new ResponseEntity<String>("Documents Verified successfully..",HttpStatus.OK);
+		    	return re;
+	    	}
+	    	else
+		    {
+		    	ResponseEntity<String> re=new ResponseEntity<String>("Documents are already proceded..",HttpStatus.OK);
+		    	return re;
+		    }
+	    }
+	    else
+	    {
+	    	throw new CustomerNotFoundException("Customer Not Peresent..");
+	    }
+	   
+	}
+	
+	
+	@PostMapping("customersforwordToCM/{customerId}")
+	public ResponseEntity<String> customersforwordToCM(@PathVariable("customerId") int cid)
+	{
+		Optional<Customer> op=oei.getCustomerByID(cid);
+	    if(op.isPresent())
+	    {
+	    	Customer c=op.get();
+	    	if(c.getVerification().getStatus().equals("Verified"))
+	    	{
+	    		oei.forwordedToCM(c);
+		    	ResponseEntity<String> re=new ResponseEntity<String>("Enquiry forworded to CM and send mail successfully..",HttpStatus.OK);
+		    	return re;
+	    	}
+	    	else
+	    	{
+	    		ResponseEntity<String> re=new ResponseEntity<String>("Documents are not valid..",HttpStatus.OK);
+		    	return re;
+	    	}
+	    }
+	    else
+	    {
+	    	throw new CustomerNotFoundException("Customer Not Peresent..");
+	    }
+	}
+	
 }
