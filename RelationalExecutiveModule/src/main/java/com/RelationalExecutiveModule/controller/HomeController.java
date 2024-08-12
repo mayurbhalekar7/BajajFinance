@@ -47,7 +47,7 @@ public class HomeController {
 			Optional<Enquiry> op = si.findById(id);
 			if (op.isPresent()) {
 				Enquiry eq = op.get();
-				if (eq.getEnquiryStatus().equals("pending")) {
+				if (eq.getEnquiryStatus().equals("f2re")) {
 					PersonalDocuments doc = new PersonalDocuments();
 					doc.setPhoto(photo.getBytes());
 					doc.setAdharcard(adharcard.getBytes());

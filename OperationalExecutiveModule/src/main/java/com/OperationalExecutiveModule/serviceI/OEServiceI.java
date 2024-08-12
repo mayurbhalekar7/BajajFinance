@@ -3,6 +3,7 @@ package com.OperationalExecutiveModule.serviceI;
 import java.util.List;
 import java.util.Optional;
 
+import com.OperationalExecutiveModule.model.Customer;
 import com.OperationalExecutiveModule.model.Enquiry;
 
 public interface OEServiceI {
@@ -16,4 +17,13 @@ public interface OEServiceI {
 	void forwordToRelationalExecutive(Enquiry e);
 
 	List<Enquiry> getEnquiry();
+
+	List<Customer> getCustomer();
+
+	Optional<Customer> getCustomerByID(int cId);
+
+	void forDocumentVerification(Customer c);
+
+	void forwordedToCM(Customer c);
 }
+
