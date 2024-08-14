@@ -15,6 +15,6 @@ public interface CustomerRepository extends JpaRepository<Customer,Integer>{
 	@Query(name="getQuery",value="from Customer inner join Verification on status=?1")
 	List<Customer> getByVerifiStatusPendingCustomer(String status);
 
-
+  
 
 }

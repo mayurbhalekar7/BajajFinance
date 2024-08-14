@@ -60,7 +60,7 @@ public class OEServiceImpl implements OEServiceI {
 						  eq.getCibil().setCibilStatus("good");
 						  eq.setLoanStatus("pending");
 						  message.setText("Hello,"+eq.getFirstName()+" "+eq.getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
-						  +eq.getCibil().getCibilScore()+", so your cibil status is good and your Loan Status is approved."+
+						  +eq.getCibil().getCibilScore()+", so your cibil status is good and your Loan Status is pending."+
 						   "\n\nImportant documents for Loan:\n"
 						   + "1.Loan application form\n"
 						   + "2. 3 photographs passport sized\n"
@@ -80,7 +80,7 @@ public class OEServiceImpl implements OEServiceI {
 						  eq.getCibil().setCibilStatus("not good");
 						  eq.setLoanStatus("rejected");
 						  message.setText("Hello,"+eq.getFirstName()+" "+eq.getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
-						  +eq.getCibil().getCibilScore()+", so your cibil status is not good and your Loan Status is not approved."+
+						  +eq.getCibil().getCibilScore()+", so your cibil status is not good and your Loan Status is rejected."+
 						  "\n\n\n Thanks & Regards,\n Bajaj Finance Team.");
 						}
 					sender.send(message);
