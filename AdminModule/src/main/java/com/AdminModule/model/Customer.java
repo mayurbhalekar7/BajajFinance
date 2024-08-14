@@ -1,13 +1,10 @@
-package com.OperationalExecutiveModule.model;
-
-import java.util.List;
+package com.AdminModule.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
 
@@ -42,13 +39,4 @@ public class Customer {
 	
 	@OneToOne(cascade = CascadeType.ALL)
 	private Guarantor guarantor;
-	
-	@OneToOne(cascade = CascadeType.ALL)
-	private SanctionLetter sanctionLetter;
-	
-	@OneToOne(cascade = CascadeType.ALL)
-	private Disbursment disbursment;
-	
-	@OneToMany(cascade = CascadeType.ALL)
-	private List<Ledger> ledeger;
 }
