@@ -21,9 +21,11 @@ import com.RelationalExecutiveModule.model.Enquiry;
 import com.RelationalExecutiveModule.model.PersonalDocuments;
 import com.RelationalExecutiveModule.service.RelationalExecuteServiceI;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RestController
-public class HomeController {
+public class RelationalExecutiveController {
 
 	@Autowired
 	RelationalExecuteServiceI si;
@@ -47,7 +49,7 @@ public class HomeController {
 			Optional<Enquiry> op = si.findById(id);
 			if (op.isPresent()) {
 				Enquiry eq = op.get();
-				if (eq.getEnquiryStatus().equals("f2re")) {
+				if (eq.getEnquiryStatus().equals("pending")) {
 					PersonalDocuments doc = new PersonalDocuments();
 					doc.setPhoto(photo.getBytes());
 					doc.setAdharcard(adharcard.getBytes());
@@ -149,5 +151,29 @@ public class HomeController {
 		return list;
 
 	}
+	
+	@PostMapping("/forwordToOE/{customerId}")
+	public ResponseEntity<String> forwordToOE(@PathVariable int customerId) {
+		
+		 
+		Optional<Customer> op = si.getCustomerById(customerId);
 
+		if (op.isPresent()) {
+			si.forwordToOE(customerId);
+			return new ResponseEntity<String>("Customer is Forword to O E", HttpStatus.OK);
+		}
+
+		else {
+			throw new CustomerNotFoundException("Invalid Customer Id");
+		}
+
+	
+	}
+	
+	@GetMapping("/getAllPendingEnquiry")
+	 public ResponseEntity<List<Customer>> getAllPendingEnquiry()
+	 {
+		List <Customer> li=si.getAllPendingEnquiry();
+		return new ResponseEntity<List<Customer>>(li, HttpStatus.OK); 
+	 }
 }

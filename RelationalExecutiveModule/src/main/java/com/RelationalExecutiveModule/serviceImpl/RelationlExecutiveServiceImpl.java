@@ -89,4 +89,17 @@ public class RelationlExecutiveServiceImpl  implements RelationalExecuteServiceI
 		 Optional<Enquiry> eq=er.findById(id);
 		return eq;
 	}
+
+	@Override
+	public void forwordToOE(int customerId) {
+		Customer cus=cr.findById(customerId).get();
+		cus.getEnquiry().setEnquiryStatus("f2oe");
+		cr.save(cus);
+	}
+
+	@Override
+	public List<Customer> getAllPendingEnquiry() {
+		List<Customer> li =cr.getAllPendingEnquiry("pending");
+		return li;
+	}
 }
