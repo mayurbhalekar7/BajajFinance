@@ -17,4 +17,8 @@ public interface RelationalExecuteServiceI {
 
 	public Optional<Enquiry> findById(int id);
 
+	public void forwordToOE(int customerId);
+
+	public List<Customer> getAllPendingEnquiry();
+
 }

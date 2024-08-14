@@ -1,4 +1,4 @@
-package com.RelationalExecutiveModule.model;
+package com.AccountHeadModule.model;
 
 import java.util.List;
 
