@@ -1,7 +1,9 @@
 package com.EnquiryModule.controller;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +37,17 @@ public class EnquiryController {
 	@PostMapping("/addEnquiry")
 	public ResponseEntity<String> addEnquiry(@Valid @RequestBody Enquiry eq)
 	{ 
-		ResponseEntity<String> rs=new ResponseEntity<String>("Send your Enquiry successfully...",HttpStatus.CREATED);
+		eq.setEnquiryStatus("pending");
+		eq.setLoanStatus("pending");
+		eq.getCibil().setCibilStatus("pending");
+		eq.getCibil().setCibilDate(null);
+		eq.getCibil().setCibilScore(0);
 		enqs.addEnquiry(eq);
+		ResponseEntity<String> rs=new ResponseEntity<String>("Send your Enquiry successfully...",HttpStatus.CREATED);
 		return rs;
 	}
 
-	@GetMapping("/getAllEnquiries")
+	@GetMapping("/getAllPendingEnquiries")
 	public ResponseEntity<List<Enquiry>> getAllEnquiry()
 	{
 		log.info("Getting all enquiry");
@@ -137,7 +144,8 @@ public class EnquiryController {
 	public ResponseEntity<String> enquiryForwardToOE(@PathVariable("email") String email) 
 	{
 		Optional<Enquiry> enq=enqs.getEnquiryByEmail(email);
-		if(enq.get().getEnquiryStatus().equals("pending"))
+		//if(enq.get().getEnquiryStatus().equals("pending"))
+		if(enq.isPresent())
 		{
 			enq.get().setEnquiryStatus("f2oe");
 			enqs.enquiryForwardToOE(enq.get());
@@ -149,4 +157,27 @@ public class EnquiryController {
 			throw new EnquiryNotFoundException("Invalid Enquiry email or status is not pending");
 		}
 	}
+	
+	@GetMapping("/getAllEnquiriesBySorting/{choice}")
+	   public List<Enquiry> getAllEnquiriesBySorting(@PathVariable("choice") int choice)
+	   {
+		   List<Enquiry> elist=enqs.getAllEnquiriesBySorting();
+		   if(choice==1)
+		   {
+			   List<Enquiry> rlisr=elist.stream().sorted(Comparator.comparing(Enquiry::getFirstName)).collect(Collectors.toList());
+			   return rlisr;
+		   }
+		   else if(choice==2)
+		   {
+			   List<Enquiry> rlisr=elist.stream().sorted(Comparator.comparing(Enquiry::getLastName)).collect(Collectors.toList());
+			   return rlisr;
+		   }
+		   else if(choice==3)
+		   {
+			   List<Enquiry> rlisr=elist.stream().sorted(Comparator.comparing(Enquiry::getAge)).collect(Collectors.toList());
+			   return rlisr;
+		   }
+		   else
+			   return elist;
+	   }
 }

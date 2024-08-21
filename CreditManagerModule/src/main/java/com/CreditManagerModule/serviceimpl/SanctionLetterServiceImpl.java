@@ -9,6 +9,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -52,6 +54,9 @@ public class SanctionLetterServiceImpl implements SanctionLetterServiceI{
 	@Autowired
 	JavaMailSender sender;
 
+	@Autowired
+    private ResourceLoader resourceLoader;
+	
 	@Override
 	public Optional<Customer> getCustomerById(int customerId) {
 		
@@ -74,9 +79,9 @@ public class SanctionLetterServiceImpl implements SanctionLetterServiceI{
 	}
 
 	@Override
-	public List<SanctionLetter> getAllPendingSanctions() {
-		// TODO Auto-generated method stub
-		return sr.findAllBySanctionLetterStatus("pending");
+	public List<Customer> getAllCustomersIsF2CMAndSanctionStatusNull()
+	{
+		return sr.getAllCustomersIsF2CMAndSanctionStatusNull("f2cm");
 	}
 
 	@Override
@@ -101,8 +106,11 @@ public class SanctionLetterServiceImpl implements SanctionLetterServiceI{
 			document.open();
 
 			Image img = null;
-			try {
-				img = Image.getInstance("/BajajFinanceProject/CreditManagerModule/src/main/resources/Images/Bajaj_finance_logo.png");
+			try 
+			{
+				Resource resource =resourceLoader.getResource("classpath:/Images/Bajaj_finance_logo.png");
+			//	img = Image.getInstance("/BajajFinanceProject/CreditManagerModule/src/main/resources/Images/Bajaj_finance_logo.png");
+				img = Image.getInstance(resource.getURL());
 				img.scalePercent(50, 50);
 				img.setAlignment(Element.ALIGN_RIGHT);
 				document.add(img);
@@ -220,5 +228,10 @@ public class SanctionLetterServiceImpl implements SanctionLetterServiceI{
 	public Optional<List<Enquiry>> getAllEnquriesByf2cm() {
 		
 		return er.findAllByEnquiryStatus("f2cm");
+	}
+
+	@Override
+	public Optional<List<Customer>> getAllCustomersBySantionLetterStatus(String status) {
+		return cr.getAllCustomersBySantionLetterStatus(status);
 	}
 }

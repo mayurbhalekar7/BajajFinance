@@ -46,6 +46,8 @@ public class Enquiry {
 	
 	private String gender;
 	
+	private long requestedLoanAmount;
+	
 	private String enquiryStatus;
 	
 	private String loanStatus;

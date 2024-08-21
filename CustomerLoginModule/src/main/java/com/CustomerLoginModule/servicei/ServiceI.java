@@ -16,26 +16,24 @@ public interface ServiceI {
 
 	public Customer findByUsername(String emailId);
 
-	public String generateOtp();
+	public String changePassword();
 
-	void sendOtpEmail(String toEmail, String otp);
-
-    public Optional<Customer> getCustomerById(int customerId);
-
+	void sendOTPToEmail(String toEmail, String otp);
+    
 	public BankAccount getBankAccount(int customerId);
 
 	public Address getAddress(int customerId);
 
 	public PersonalDocuments getPersonalDocuments(int customerId);
 	
-
-
 	public Enquiry getEnquiry(int customerId);
 
-	public Optional<Customer> findUsername(String emailId);
+	public Optional<Customer> findUsername(String username);
 
-	public void sendOPtPasswod(Customer cus);
+	public void sendPasswordOnEmail(Customer customer);
 
 	public void updateCustomer(Customer cusD);
+
+	void setnewPassword(Optional<Customer> customer, String newPassword);
 	
 }

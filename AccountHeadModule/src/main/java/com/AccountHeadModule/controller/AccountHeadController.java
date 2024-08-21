@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.AccountHeadModule.exception.CustomerNotFoundException;
-import com.AccountHeadModule.exception.DisbursmentNotFoundException;
 import com.AccountHeadModule.exception.LedgerNotFoundException;
 import com.AccountHeadModule.model.Customer;
 import com.AccountHeadModule.model.Disbursment;
@@ -33,107 +32,120 @@ public class AccountHeadController {
 	
 	@PutMapping("/addDisbusrment/{customerId}")
 	public ResponseEntity<String> addDisbusrmentById(@PathVariable("customerId")int customerId ,@RequestBody Disbursment disbursment) {
-		Optional<Customer> op=si.findById(customerId);
-		
-		if(op.isPresent())
+		Optional<Customer> customer=si.findById(customerId);
+		if(customer.isPresent() && customer.get().getEnquiry().getEnquiryStatus().equals("f2ah") && !customer.get().getDisbursment().getDisbursmentStaus().equals("done"))
 		{
-			
 			si.saveDisbursment(customerId, disbursment);
 			ResponseEntity<String> rs = new ResponseEntity<String>("Disbursment Added Succesfully.",HttpStatus.OK);
 			return rs;
 		}
-		else {
-			throw  new CustomerNotFoundException("Invalid customer  id");
+		else 
+		{
+			throw  new CustomerNotFoundException("Customer Not Found...");
 		}
-		
-		
 	}
 	
-	 @PostMapping("/sendDisbursment/{customerId}")
+	 @PutMapping("/sendDisbursmentToBankAccount/{customerId}")
 	 public  ResponseEntity<String> sendDisbursment(@PathVariable("customerId") int customerId)
 	 {
-		 Optional<Customer> op=si.findById(customerId);
-			
-			if(op.isPresent())
-			{
-				int DisbursmentId=op.get().getDisbursment().getDisbursmentId();
-				si.sendDisbursment(DisbursmentId);
-				ResponseEntity<String> rs = new ResponseEntity<String>("Lone Amount Added Successfully",HttpStatus.OK);
-				return rs;
-			}
-			else {
-				throw new CustomerNotFoundException("Invalid customer  id");
-			}
-		 
+		 Optional<Customer> customer=si.findById(customerId);
+		 if(customer.isPresent() && customer.get().getDisbursment().getDisbursmentStaus().equals("pending"))
+		 {
+		 	int DisbursmentId=customer.get().getDisbursment().getDisbursmentId();
+			si.sendDisbursment(customer.get(),DisbursmentId);
+			ResponseEntity<String> rs = new ResponseEntity<String>("Lone Amount Added Successfully to related bank account...",HttpStatus.OK);
+			return rs;
+		}
+		else 
+		{
+			throw new CustomerNotFoundException("Customer Not Found...");
+		} 
 	 }
 
 	 @PostMapping("createLedger/{customerId}")
 	 public  ResponseEntity<String> createLedger(@PathVariable("customerId")int customerId) {
-		 Optional<Customer> op=si.findById(customerId);
-		 if(op.isPresent())
+		 Optional<Customer> customer=si.findById(customerId);
+		 if(customer.isPresent())
 		 {
-		    si.createLedger(customerId); 
-			 
-	 	return  new ResponseEntity<String>("Lerger created for "+customerId,HttpStatus.OK);
+			String responseString =si.createLedger(customerId);  
+			return  new ResponseEntity<String>(responseString+" Customer Id:"+customerId,HttpStatus.OK);
 		 }
 		 else
 		 {
-				throw new CustomerNotFoundException("Invalid customer  id");
-			}
+				throw new CustomerNotFoundException("Customer not found...");
+		 }
 	 }
 	 
-	   @PostMapping("/payEmi/{customerId}/{ledgerId}")
+	   @PutMapping("/payEmi/{customerId}/{ledgerId}")
 	   public ResponseEntity<String> payEmi(@PathVariable("customerId")int customerId,@PathVariable("ledgerId")int ledgerId)
 	   {
-		   Optional<Customer> op=si.findById(customerId);
-			 if(op.isPresent())
-			 {
-				 Customer cus=op.get();
-				 if(cus.getDisbursment().getDisbursmentStaus().equals("done"))
-				  
-				 {
-					
-					String s=si.updateLedger(customerId,ledgerId);
-					ResponseEntity<String> rs = new ResponseEntity<String>(s,HttpStatus.OK);
+		   Optional<Customer> customer=si.findById(customerId);
+		   if(customer.isPresent())
+		   {
+			   if(si.CheckCustomerAndLedgerMapping(customerId, ledgerId)==false)
+			   {
+				   throw new LedgerNotFoundException("Ledger Not Found..."); 
+			   }
+			   if(customer.get().getDisbursment().getDisbursmentStaus().equals("done") )
+			   {
+					String responseString=si.updateLedger(customerId,ledgerId);
+					ResponseEntity<String> rs = new ResponseEntity<String>(responseString,HttpStatus.OK);
 					return rs;
 				 }
-				 
-				 else {
-					 throw new LedgerNotFoundException("Invalid ledger  id");
+				 else 
+				 {
+					 throw new LedgerNotFoundException("Ledger Not Found...");
 				 }
 			 }
 			 else
 			 {
-					throw new CustomerNotFoundException("Invalid customer  id");
-				} 
+					throw new CustomerNotFoundException("Customer Not Found...");
+			 } 
 	   }
 	   
-	   @PostMapping("/skipEmi/{customerId}/{ledgerId}")
+	   @PutMapping("/skipEmi/{customerId}/{ledgerId}")
 	   public ResponseEntity<String> skipEmi(@PathVariable("customerId")int customerId,@PathVariable("ledgerId")int ledgerId)
 	   {
-		   Optional<Customer> op=si.findById(customerId);
-			 if(op.isPresent())
+		   	 Optional<Customer> customer=si.findById(customerId);
+			 if(customer.isPresent())
 			 {
-				 Customer cus=op.get();
-				 List<Ledger> l= cus.getLedeger();
-				 String s= si.skipEmi(l,ledgerId);
-				 ResponseEntity<String> rs = new ResponseEntity<String>(s,HttpStatus.OK);
-				 return rs;
+				 if(si.CheckCustomerAndLedgerMapping(customerId, ledgerId)==false)
+				 {
+				    throw new LedgerNotFoundException("Ledger Not Found..."); 
+				 }
+				 if(customer.get().getLedeger().size()>1)
+				 {
+					 List<Ledger> ledgerList= customer.get().getLedeger();
+					 String s= si.skipEmi(ledgerList,ledgerId,customer.get());
+					 ResponseEntity<String> rs = new ResponseEntity<String>(s,HttpStatus.OK);
+					 return rs;
+				 }
+				 else
+				 {
+					 throw new LedgerNotFoundException("Ledger Not Found...");
+				 }
 			 }
 			 else
 			 {
-					throw new CustomerNotFoundException("Invalid customer  id");
+					throw new CustomerNotFoundException("Customer not found...");
 				}
-		
 	   }
-	    @GetMapping("/getAllSantionLaterAccepted")
+	   
+	    @GetMapping("/getAllSanctionLettersAcceptedCustomers")
 	    public ResponseEntity<List<Customer>> getAllSantionLaterAccepted()
 	    {
-	    	List <Customer> li=si.getAllSantionLaterAccepted();
-	    	ResponseEntity<List<Customer>> rs = new ResponseEntity<List<Customer>>(li,HttpStatus.OK);
-			 return rs;
+	    	List <Customer> clist=si.getAllSantionLaterAccepted();
+	    	if(clist.size()>0)
+	    	{
+	    		ResponseEntity<List<Customer>> rs = new ResponseEntity<List<Customer>>(clist,HttpStatus.OK);
+	    		return rs;
+	    	}
+	    	else
+	    	{
+	    		throw new CustomerNotFoundException("Customers Not Found...");
+	    	}
 	    	
 	    }
-	   }
+}
 	   
 

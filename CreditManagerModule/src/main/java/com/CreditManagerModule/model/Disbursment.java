@@ -21,6 +21,7 @@ public class Disbursment {
 	private String bankName;
 	private String brnchName;
 	private double tarnsferAmount;
+	private long accountNumber;
 	private String ifscCode;
 	private Date tillDate;
 }

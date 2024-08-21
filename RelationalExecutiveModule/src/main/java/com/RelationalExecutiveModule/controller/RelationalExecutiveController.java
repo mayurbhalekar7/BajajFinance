@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+
 import com.RelationalExecutiveModule.exception.CustomerNotFoundException;
 import com.RelationalExecutiveModule.exception.EnquiryNotFoundException;
 import com.RelationalExecutiveModule.model.Customer;
@@ -21,7 +23,7 @@ import com.RelationalExecutiveModule.model.Enquiry;
 import com.RelationalExecutiveModule.model.PersonalDocuments;
 import com.RelationalExecutiveModule.service.RelationalExecuteServiceI;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 @RestController
@@ -32,24 +34,23 @@ public class RelationalExecutiveController {
 
 	@PostMapping(value = "/saveCustomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> saveCustomer(@RequestPart("adharcard") MultipartFile adharcard,
-			@RequestPart("pancard") MultipartFile pancard, @RequestPart("photo") MultipartFile photo,
-			@RequestPart("signature") MultipartFile signature,
-			@RequestPart("OccupationProof") MultipartFile OccupationProof,
-			@RequestPart("ITreturn") MultipartFile ITreturn, @RequestPart("addressProof") MultipartFile addressProof,
-			@RequestPart("data") String customer) 
+	@RequestPart("pancard") MultipartFile pancard, @RequestPart("photo") MultipartFile photo,
+	@RequestPart("signature") MultipartFile signature,
+	@RequestPart("OccupationProof") MultipartFile OccupationProof,
+	@RequestPart("ITreturn") MultipartFile ITreturn, @RequestPart("addressProof") MultipartFile addressProof,
+	@RequestPart("customerData") String customerData) 
 	{
 		ObjectMapper om = new ObjectMapper();
-
-		try {
-
-			Customer cusD = om.readValue(customer, Customer.class);
-
-			int id = cusD.getEnquiry().getEnquiryId();
-
-			Optional<Enquiry> op = si.findById(id);
-			if (op.isPresent()) {
-				Enquiry eq = op.get();
-				if (eq.getEnquiryStatus().equals("pending")) {
+		try 
+		{
+			Customer customer = om.readValue(customerData, Customer.class);
+			int id = customer.getEnquiry().getEnquiryId();
+			Optional<Enquiry> enquiry = si.findById(id);
+			if (enquiry.isPresent()) 
+			{
+				Enquiry eq = enquiry.get();
+				if (eq.getEnquiryStatus().equals("f2re"))
+				{
 					PersonalDocuments doc = new PersonalDocuments();
 					doc.setPhoto(photo.getBytes());
 					doc.setAdharcard(adharcard.getBytes());
@@ -58,47 +59,41 @@ public class RelationalExecutiveController {
 					doc.setOccupationProof(OccupationProof.getBytes());
 					doc.setITreturn(ITreturn.getBytes());
 					doc.setAddressProof(addressProof.getBytes());
-					cusD.setDocuments(doc);
-					
-					cusD.setEnquiry(eq);
-					si.saveCustomer(cusD);
-					
-					ResponseEntity<String> rs = new ResponseEntity<String>("Send your Loan Application successfully...",
-							HttpStatus.CREATED);
+					customer.setDocuments(doc);
+					customer.setEnquiry(eq);
+					si.saveCustomer(customer);
+					ResponseEntity<String> rs = new ResponseEntity<String>("Customer Data Saved Successfully...",HttpStatus.CREATED);
 					return rs;
 				}
-
-				else {
-					throw new EnquiryNotFoundException(" Enquiry Status  is not eligible for Registration");
+				else 
+				{
+					throw new EnquiryNotFoundException("Enquiry is not under Relational Executive");
 				}
-
-			} else {
-				throw new EnquiryNotFoundException(" invalid enquiry id");
+			} 
+			else 
+			{
+				throw new EnquiryNotFoundException("Enquiry Not Found");
 			}
-
 		}
-		catch (Exception e) {
-
+		catch (Exception e) 
+		{
 			e.printStackTrace();
 		}
-		return null;
-
-		
+		ResponseEntity<String> rs = new ResponseEntity<String>("Customer Data Not Saved...",HttpStatus.BAD_REQUEST);
+		return rs;
 	}
 
-	@GetMapping("/getCustomerById/{customerId}")
+	@GetMapping("/getAnyCustomerById/{customerId}")
 	public ResponseEntity<Customer> getCustomerById(@PathVariable("customerId") int customerId) {
 
 		Optional<Customer> op = si.getCustomerById(customerId);
-
 		if (op.isPresent()) {
 			return new ResponseEntity<Customer>(op.get(), HttpStatus.OK);
 		}
-
-		else {
-			throw new CustomerNotFoundException("Invalid Customer Id");
+		else 
+		{
+			throw new CustomerNotFoundException("Customer Not Found...");
 		}
-
 	}
 
 	@PutMapping(value = "updateCustomer/{customerId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -137,43 +132,66 @@ public class RelationalExecutiveController {
 					HttpStatus.CREATED);
 			return rs;
 		} else {
-			throw new CustomerNotFoundException("Invalid Customer Id");
+			throw new CustomerNotFoundException("Customer Not Found...");
 		}
 
 	}
 
-	@GetMapping("/getAllCustomer")
-	public ResponseEntity<List<Customer>> getAllCustomer() {
-		List<Customer> listc = si.getAllCutomer();
-
-		ResponseEntity<List<Customer>> list = new ResponseEntity<List<Customer>>(listc, HttpStatus.OK);
-
-		return list;
-
+	@GetMapping("/getAllF2RECustomers")
+	public ResponseEntity<List<Customer>> getAllF2RECustomers() {
+		List<Customer> clist = si.getAllF2RECustomers();
+        if(clist.size()>0)
+        {
+        	ResponseEntity<List<Customer>> re = new ResponseEntity<List<Customer>>(clist, HttpStatus.OK);
+        	return re;
+        }
+        else
+        {
+        	throw new CustomerNotFoundException("Customer Not Found...");
+        }
 	}
 	
-	@PostMapping("/forwordToOE/{customerId}")
-	public ResponseEntity<String> forwordToOE(@PathVariable int customerId) {
-		
-		 
-		Optional<Customer> op = si.getCustomerById(customerId);
-
-		if (op.isPresent()) {
+	@GetMapping("/customerForwordToOEforDocumentVerification/{customerId}")
+	public ResponseEntity<String> forwordToOE(@PathVariable int customerId) 
+	{
+		Optional<Customer> customer = si.getCustomerById(customerId);
+		if(customer.isPresent()&& customer.get().getEnquiry().getEnquiryStatus().equals("Registered")) 
+		{
 			si.forwordToOE(customerId);
-			return new ResponseEntity<String>("Customer is Forword to O E", HttpStatus.OK);
+			return new ResponseEntity<String>("Customer is Forword to Operational Executive...", HttpStatus.OK);
 		}
-
-		else {
-			throw new CustomerNotFoundException("Invalid Customer Id");
+		else 
+		{
+			throw new CustomerNotFoundException("Customer Not Found...");
 		}
-
-	
 	}
 	
-	@GetMapping("/getAllPendingEnquiry")
-	 public ResponseEntity<List<Customer>> getAllPendingEnquiry()
-	 {
-		List <Customer> li=si.getAllPendingEnquiry();
-		return new ResponseEntity<List<Customer>>(li, HttpStatus.OK); 
-	 }
+	@GetMapping("/getByF2reAndGoodEnquiry")
+	public ResponseEntity<List<Enquiry>> getByF2reAndGoodEnquiry() {
+		List<Enquiry> elist = si.getByF2reAndGoodEnquiry();
+		if(elist.size()>0)
+		{
+			ResponseEntity<List<Enquiry>> re=new ResponseEntity<List<Enquiry>>(elist,HttpStatus.OK);
+			return re;
+		}
+		else
+		{
+			throw new EnquiryNotFoundException("Enquiry Not Found...");
+		}
+	}
+	
+	@GetMapping("/getAllRegisteredCustomers")
+	public ResponseEntity<List<Customer>> getAllRegisteredCustomers() {
+		List<Customer> clist = si.getAllRegisteredCustomers();
+        if(clist.size()>0)
+        {
+        	ResponseEntity<List<Customer>> re = new ResponseEntity<List<Customer>>(clist, HttpStatus.OK);
+        	return re;
+        }
+        else
+        {
+        	throw new CustomerNotFoundException("Customer Not Found...");
+        }
+	}
+	
 }

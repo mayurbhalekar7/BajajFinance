@@ -1,6 +1,5 @@
 package com.AccountHeadModule.serviceI;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,14 +13,16 @@ public interface ServiceI {
 
 	 public void saveDisbursment( int customerId,Disbursment disbursment);
 
-	public void sendDisbursment(int disbursmentId);
+	public void sendDisbursment(Customer customer, int disbursmentId);
 
-	public void createLedger(int customerId);
+	public String createLedger(int customerId);
 
 	public String updateLedger( int customerId , int ledgerId);
 
-	public String skipEmi(List<Ledger> l, int ledgerId);
+	public String skipEmi(List<Ledger> l, int ledgerId,Customer customer);
 
 	public List<Customer> getAllSantionLaterAccepted();
+	
+	public boolean CheckCustomerAndLedgerMapping(int customerId,int ledgerId);
 
 }

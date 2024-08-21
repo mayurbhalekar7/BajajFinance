@@ -13,12 +13,13 @@ public interface RelationalExecuteServiceI {
 
 	public void updateCustomer(Customer cusD);
 
-	public List<Customer> getAllCutomer();
+	public List<Customer> getAllF2RECustomers();
 
 	public Optional<Enquiry> findById(int id);
 
 	public void forwordToOE(int customerId);
 
-	public List<Customer> getAllPendingEnquiry();
+	public List<Enquiry> getByF2reAndGoodEnquiry();
 
+	public List<Customer> getAllRegisteredCustomers();
 }

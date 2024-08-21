@@ -101,4 +101,9 @@ public class EnquiryServiceImpl implements EnquiryServiceI {
 		Optional<Enquiry> enq=er.findByEmailAndEnquiryStatus(email,"pending");
 		return enq;
 	}
+
+	@Override
+	public List<Enquiry> getAllEnquiriesBySorting() {
+		return er.findAll();
+	}
 }
