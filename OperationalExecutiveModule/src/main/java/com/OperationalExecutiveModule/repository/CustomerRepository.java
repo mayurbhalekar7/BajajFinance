@@ -12,8 +12,8 @@ import com.OperationalExecutiveModule.model.Customer;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer,Integer>{
 
-	@Query(name="getQuery",value="from Customer inner join Verification on status=?1")
-	List<Customer> getByVerifiStatusPendingCustomer(String status);
+	@Query(name="getQuery",value="from Customer c inner join c.enquiry e inner join c.verification v on e.enquiryStatus=?1 and v.status=?2")
+	List<Customer> getByVerifiStatusPendingCustomer(String status1,String status2);
 
   
 

@@ -11,5 +11,4 @@ public interface CoustomerRepository extends JpaRepository<Customer, Integer> {
 
 	@Query("from Customer c inner join c.sanctionLetter s on s.sanctionLetterStatus=?1")
 	List<Customer> getAllSantionLaterAccepted(String string);
-
 }

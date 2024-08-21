@@ -15,7 +15,7 @@ public interface SanctionLetterServiceI {
 
 	void calculateEMI(SanctionLetter sanctionLetter);
 
-	List<SanctionLetter> getAllPendingSanctions();
+	List<Customer> getAllCustomersIsF2CMAndSanctionStatusNull();
 
 	byte[] generateSanctionLetterPDF(SanctionLetter sanctionLetter);
 
@@ -24,4 +24,6 @@ public interface SanctionLetterServiceI {
 	void forwardSanctionLetterToCustomer(Customer customer, Enquiry enquiry,SanctionLetter sanctionLetter);
 
 	Optional<List<Enquiry>> getAllEnquriesByf2cm();
+
+	Optional<List<Customer>> getAllCustomersBySantionLetterStatus(String status);
 }

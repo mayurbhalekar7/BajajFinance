@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.OperationalExecutiveModule.model.Customer;
 import com.OperationalExecutiveModule.model.Enquiry;
+import com.OperationalExecutiveModule.model.PersonalDocuments;
 
 public interface OEServiceI {
 
@@ -25,5 +26,7 @@ public interface OEServiceI {
 	void forDocumentVerification(Customer c);
 
 	void forwordedToCM(Customer c);
+
+	PersonalDocuments getPersonalDocuments(int customerId);
 }
 

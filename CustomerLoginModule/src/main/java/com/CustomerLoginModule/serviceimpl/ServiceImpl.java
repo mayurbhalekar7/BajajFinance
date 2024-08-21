@@ -65,7 +65,7 @@ public class ServiceImpl implements ServiceI {
 	    private static final int OTP_LENGTH = 6;
 
 	    @Override
-	    public String generateOtp() {
+	    public String changePassword() {
 	        SecureRandom random = new SecureRandom();
 	        StringBuilder otp = new StringBuilder(OTP_LENGTH);
 	        for (int i = 0; i < OTP_LENGTH; i++) {
@@ -75,25 +75,13 @@ public class ServiceImpl implements ServiceI {
 	    }
 	
 	    @Override
-	    public void sendOtpEmail(String toEmail, String otp) {
+	    public void sendOTPToEmail(String toEmail, String otp) {
 	        SimpleMailMessage message = new SimpleMailMessage();
 	        message.setTo(toEmail);
 	        message.setSubject("Your OTP Code");
 	        message.setText("Your OTP code is: " + otp);
-
 	        mailSender.send(message);
 	    }
-
-		
-
-		@Override
-		public Optional<Customer>getCustomerById(int customerId) {
-		
-			  Optional<Customer>op=cr.findById(customerId);
-					  
-					  return op;	}
-
-		
 
 		@Override
 		public BankAccount getBankAccount(int customerId) {
@@ -121,7 +109,6 @@ public class ServiceImpl implements ServiceI {
 			Customer cus=cr.findById(customerId).get();
 			int id= cus.getDocuments().getDocumentId();
 			PersonalDocuments pd=pr.findById(id).get();
-			
 			return  pd;
 		}
 
@@ -134,27 +121,34 @@ public class ServiceImpl implements ServiceI {
 		}
 
 		@Override
-		public Optional<Customer> findUsername(String emailId) {
-			Optional<Customer> op=cr.findByUsername(emailId);
+		public Optional<Customer> findUsername(String username) {
+			Optional<Customer> op=cr.findByUsername(username);
 			return op;
 		}
 
 		@Override
-		public void sendOPtPasswod(Customer cus) {
-			  String otp=generateOtp();
-			  cus.setPassword(otp);
-			 SimpleMailMessage message = new SimpleMailMessage();
-		        message.setTo(cus.getUsername());
-		        message.setSubject("Bajaj Finance Coustomer login Password");
-		        message.setText(" Hello \n Your OTP is set as your password use this otp to login and update your pass word \n your username is your current email and password is  : " + otp);
-		        mailSender.send(message);
-		        cr.save(cus);
+		public void sendPasswordOnEmail(Customer customer) 
+		{
+			  String otp=changePassword();
+			  customer.setPassword(otp);
+			  SimpleMailMessage message = new SimpleMailMessage();
+		      message.setTo(customer.getUsername());
+		      message.setSubject("Bajaj Finance Coustomer Password");
+		      message.setText(" Hello \n your current password is  : " + otp);
+		      mailSender.send(message);
+		      cr.save(customer);
 		}
 
 		@Override
 		public void updateCustomer(Customer cusD) {
 			cr.save(cusD);
 			
+		}
+
+		@Override
+		public void setnewPassword(Optional<Customer> customer, String newPassword) {
+			customer.get().setPassword(newPassword);
+			cr.save(customer.get());
 		}
 }
 	

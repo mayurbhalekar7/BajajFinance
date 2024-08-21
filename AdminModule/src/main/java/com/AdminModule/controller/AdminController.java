@@ -1,6 +1,8 @@
 package com.AdminModule.controller;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.AdminModule.model.Cibil;
 import com.AdminModule.model.Customer;
 import com.AdminModule.model.Enquiry;
 import com.AdminModule.model.User;
@@ -30,11 +33,27 @@ public class AdminController {
 	   return re;
    }
    
-   @GetMapping("/getAllEnquiries")
-   public List<Enquiry> getAllEnquiries()
+   @GetMapping("/getAllEnquiries/{choice}")
+   public List<Enquiry> getAllEnquiries(@PathVariable("choice") int choice)
    {
 	   List<Enquiry> elist=si.getAllEnquiries();
-	   return elist;
+	   if(choice==1)
+	   {
+		   List<Enquiry> rlist=elist.stream().sorted(Comparator.comparing(Enquiry::getFirstName)).collect(Collectors.toList());
+		   return rlist;
+	   }
+	   else if(choice==2)
+	   {
+		   List<Enquiry> rlist=elist.stream().sorted(Comparator.comparing(Enquiry::getLastName)).collect(Collectors.toList());
+		   return rlist;
+	   }
+	   else if(choice==3)
+	   {
+		   List<Enquiry> rlist=elist.stream().sorted(Comparator.comparing(Enquiry::getAge)).collect(Collectors.toList());
+		   return rlist;
+	   }
+	   else
+		   return elist;
    }
    
    @GetMapping("/getEnquiriesByEnquiryStatus/{enquiryStatus}")
@@ -44,10 +63,31 @@ public class AdminController {
 	   return elist;
    }
    
-   @GetMapping("/getAllCustomers")
-   public List<Customer> getAllCustomers()
+   @GetMapping("/getAllCustomers/{choice}")
+   public List<Customer> getAllCustomers(@PathVariable("choice") int choice)
    {
-	  List<Customer> clist=si.getAllCustomers(); 
+	  List<Customer> clist=si.getAllCustomers();
+	  
+	  if(choice==1)
+	  {
+	  List<Customer> rlist=clist.stream().sorted(Comparator.comparing(Customer::getEnquiry,Comparator.comparing(Enquiry::getCibil,Comparator.comparing(Cibil::getCibilScore)))).collect(Collectors.toList());
+	   return rlist;
+	  }
+	  else if(choice==2)
+	  {
+	  List<Customer> rlist=clist.stream().sorted(Comparator.comparing(Customer::getEnquiry,Comparator.comparing(Enquiry::getFirstName))).collect(Collectors.toList());
+	  return rlist;
+	  }
+	  else if(choice==3)
+	  {
+	  List<Customer> rlist=clist.stream().sorted(Comparator.comparing(Customer::getEnquiry,Comparator.comparing(Enquiry::getLastName))).collect(Collectors.toList());
+	  return rlist;
+	  }
+	  else if(choice==4)
+	  {
+	  List<Customer> rlist=clist.stream().sorted(Comparator.comparing(Customer::getEnquiry,Comparator.comparing(Enquiry::getAge))).collect(Collectors.toList());
+	  return rlist;
+	  }
 	  return clist;
    }
    
@@ -58,7 +98,7 @@ public class AdminController {
 	   return clist;
    }
    
-   @GetMapping("getCustomerByEnquiryStatusAndVerifiStatus/{enquiryStatus}/{status}")
+   @GetMapping("getCustomerByEnquiryStatusAndDocumVerifiStatus/{enquiryStatus}/{status}")
    public List<Customer> getCustomerByEnquiryStatusAndVerifiStatus(@PathVariable("enquiryStatus") String eStatus,@PathVariable("status") String vStatus)
    {
 	   List<Customer> clist=si.getCustomerByEnquiryStatusAndVerifiStatus(eStatus,vStatus); 

@@ -22,6 +22,8 @@ public interface EnquiryServiceI {
 
 	Optional<Enquiry> getEnquiryByEmail(String email);
 
+	List<Enquiry> getAllEnquiriesBySorting();
+
 	
 
 

@@ -63,9 +63,7 @@ public class RelationlExecutiveServiceImpl  implements RelationalExecuteServiceI
 
 	@Override
 	public Optional<Customer> getCustomerById(int customerId) {
-		
 		Optional<Customer> op=cr.findById(customerId);
-		
 		return op;
 	}
 
@@ -78,9 +76,8 @@ public class RelationlExecutiveServiceImpl  implements RelationalExecuteServiceI
 	}
 
 	@Override
-	public List<Customer> getAllCutomer() {
-		List<Customer> listc=(List<Customer>) cr.findAll();
-		return listc;
+	public List<Customer> getAllF2RECustomers() {
+		return cr.getCustomerByEnquiryStatus("f2re");
 	}
 
 	@Override
@@ -98,8 +95,14 @@ public class RelationlExecutiveServiceImpl  implements RelationalExecuteServiceI
 	}
 
 	@Override
-	public List<Customer> getAllPendingEnquiry() {
-		List<Customer> li =cr.getAllPendingEnquiry("pending");
-		return li;
+	public List<Enquiry> getByF2reAndGoodEnquiry() {
+		return cr.getByEnquiryStatusAndCibilStatus("f2re","good");
 	}
+
+	@Override
+	public List<Customer> getAllRegisteredCustomers() {
+		return cr.getCustomerByEnquiryStatus("Registered");
+	}
+
+	
 }

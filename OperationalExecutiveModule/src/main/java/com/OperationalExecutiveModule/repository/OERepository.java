@@ -15,7 +15,8 @@ public interface OERepository extends JpaRepository<Enquiry, Integer> {
 	Optional<Enquiry> getByEmail(String email);
 	
 	List<Enquiry> getByEnquiryStatus(String enquiryStatus);
-
+	
+	@Query("from Enquiry e where e.enquiryId=?1 and e.enquiryStatus=?2")
 	Optional<Enquiry> getByEnquiryIdAndEnquiryStatus(int enquiryId, String string);
 
 	@Query(name="getQuery",value="from Enquiry inner join Cibil on enquiryStatus=?1 and cibilStatus=?2 and enquiryId=cibilId")

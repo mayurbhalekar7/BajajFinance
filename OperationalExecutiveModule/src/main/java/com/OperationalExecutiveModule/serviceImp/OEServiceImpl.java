@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.OperationalExecutiveModule.model.Customer;
 import com.OperationalExecutiveModule.model.Enquiry;
+import com.OperationalExecutiveModule.model.PersonalDocuments;
 import com.OperationalExecutiveModule.repository.CustomerRepository;
 import com.OperationalExecutiveModule.repository.OERepository;
+import com.OperationalExecutiveModule.repository.PersonalDocumentsRepository;
 import com.OperationalExecutiveModule.serviceI.OEServiceI;
 
 @Service
@@ -24,6 +26,9 @@ public class OEServiceImpl implements OEServiceI {
 	
 	@Autowired
 	CustomerRepository cr;
+	
+	@Autowired
+	PersonalDocumentsRepository pr;
 	
 	@Autowired
 	JavaMailSender sender;
@@ -38,29 +43,29 @@ public class OEServiceImpl implements OEServiceI {
 	@Override
 	public Optional<Enquiry> checkCibilScore(int enquiryId) {
 		
-		Optional<Enquiry> op=or.getByEnquiryIdAndEnquiryStatus(enquiryId,"f2oe");
-		if(op.isPresent())
+		Optional<Enquiry> enquiry=or.getByEnquiryIdAndEnquiryStatus(enquiryId,"f2oe");
+		if(enquiry.isPresent())
 		{
-			Enquiry eq=op.get();
-			if(eq.getCibil().getCibilScore()==0)
-		      {
+			
+			if(enquiry.get().getCibil().getCibilScore()==0)
+		     {
 					Random random=new Random();
 					int min=300,max=900,cibil=0;
 					
 					cibil=random.nextInt((max-min)+1)+min;
 					
-					eq.getCibil().setCibilScore(cibil);
-					eq.getCibil().setCibilDate(new Date());
+					enquiry.get().getCibil().setCibilScore(cibil);
+					enquiry.get().getCibil().setCibilDate(new Date());
 					
 					SimpleMailMessage message=new SimpleMailMessage();
-					message.setTo(eq.getEmail());
+					message.setTo(enquiry.get().getEmail());
 					message.setSubject("Bajaj Finance Home Loan Enquiry Status");
 					if(cibil>650)
 					{
-						  eq.getCibil().setCibilStatus("good");
-						  eq.setLoanStatus("pending");
-						  message.setText("Hello,"+eq.getFirstName()+" "+eq.getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
-						  +eq.getCibil().getCibilScore()+", so your cibil status is good and your Loan Status is pending."+
+						  enquiry.get().getCibil().setCibilStatus("good");
+						  enquiry.get().setLoanStatus("pending");
+						  message.setText("Hello,"+enquiry.get().getFirstName()+" "+enquiry.get().getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
+						  +enquiry.get().getCibil().getCibilScore()+", so your cibil status is good and your Loan Status is pending."+
 						   "\n\nImportant documents for Loan:\n"
 						   + "1.Loan application form\n"
 						   + "2. 3 photographs passport sized\n"
@@ -77,25 +82,25 @@ public class OEServiceImpl implements OEServiceI {
 					}
 					else
 						{
-						  eq.getCibil().setCibilStatus("not good");
-						  eq.setLoanStatus("rejected");
-						  message.setText("Hello,"+eq.getFirstName()+" "+eq.getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
-						  +eq.getCibil().getCibilScore()+", so your cibil status is not good and your Loan Status is rejected."+
+						  enquiry.get().getCibil().setCibilStatus("not good");
+						  enquiry.get().setLoanStatus("rejected");
+						  message.setText("Hello,"+enquiry.get().getFirstName()+" "+enquiry.get().getLastName()+",\nYour CibilScore calculated by Bajaj Finance Team is " 
+						  +enquiry.get().getCibil().getCibilScore()+", so your cibil status is not good and your Loan Status is rejected."+
 						  "\n\n\n Thanks & Regards,\n Bajaj Finance Team.");
 						}
 					sender.send(message);
-					or.save(eq);
-					return op;
+					or.save(enquiry.get());
+					return enquiry;
 		      }
 		  else
 			{
-				eq.getCibil().setCibilScore(0);
-				return op;
+				enquiry.get().getCibil().setCibilScore(0);
+				return enquiry;
 			}
 		}
 		else
 		{
-			return op;
+			return enquiry;
 		}
 		
 	}
@@ -130,7 +135,7 @@ public class OEServiceImpl implements OEServiceI {
 	@Override
 	public List<Customer> getCustomer() {
 
-		return cr.getByVerifiStatusPendingCustomer("pending");
+		return cr.getByVerifiStatusPendingCustomer("f2oe","pending");
 	}
 
 	@Override
@@ -141,9 +146,10 @@ public class OEServiceImpl implements OEServiceI {
 	}
 
 	@Override
-	public void forDocumentVerification(Customer c) {
-		
+	public void forDocumentVerification(Customer c) {		
 		c.getVerification().setStatus("Verified");
+		c.getVerification().setVerificationDate(new Date());
+		c.getVerification().setRemark("All Document are correct...");
 		cr.save(c);
 	}
 
@@ -163,6 +169,12 @@ public class OEServiceImpl implements OEServiceI {
 		sender.send(message);
 		cr.save(c);
 	}
-	
-	
+
+	@Override
+	public PersonalDocuments getPersonalDocuments(int customerId) {
+		Customer cus=cr.findById(customerId).get();
+		int id= cus.getDocuments().getDocumentId();
+		PersonalDocuments pd=pr.findById(id).get();
+		return  pd;
+	}
 }

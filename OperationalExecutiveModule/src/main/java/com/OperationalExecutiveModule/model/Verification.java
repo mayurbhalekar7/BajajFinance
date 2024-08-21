@@ -15,7 +15,6 @@ public class Verification {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int verificationId;
-	
 	private Date verificationDate;
 	private String status;
 	private String remark;

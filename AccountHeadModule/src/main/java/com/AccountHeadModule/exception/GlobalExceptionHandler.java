@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiError> CustomerNotFoundExceptionHandler(HttpServletRequest request)
 	{
 		ApiError error=new ApiError();
-		error.setMassage("Disbursment Not Found");
+		error.setMassage("Customer Not Found");
 		error.setPath(request.getRequestURI());
 		error.setStatusCode(HttpStatus.NOT_FOUND.value());
 		error.setStatusMessage(HttpStatus.NOT_FOUND);
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiError> LedgerNotFoundExceptionHandler(HttpServletRequest request)
 	{
 		ApiError error=new ApiError();
-		error.setMassage("Disbursment Not Found");
+		error.setMassage("Ledger Not Found");
 		error.setPath(request.getRequestURI());
 		error.setStatusCode(HttpStatus.NOT_FOUND.value());
 		error.setStatusMessage(HttpStatus.NOT_FOUND);
