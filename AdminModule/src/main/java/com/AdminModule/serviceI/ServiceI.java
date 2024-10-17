@@ -26,4 +26,7 @@ public interface ServiceI {
 
 	List<Customer> getCustomerByLoanStatus(String loanStatus);
 
+	User getUserByUserAndPass(String unm, String pass);
+
+	
 }
