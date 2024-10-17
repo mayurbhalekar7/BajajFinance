@@ -14,6 +14,7 @@ import com.AdminModule.model.User;
 import com.AdminModule.repository.AdminRepository;
 import com.AdminModule.repository.CustomerRepository;
 import com.AdminModule.repository.EnquiryRepository;
+import com.AdminModule.repository.UserRepository;
 import com.AdminModule.serviceI.ServiceI;
 
 @Service
@@ -21,6 +22,9 @@ public class ServiceImpl implements ServiceI{
 
 	@Autowired
 	AdminRepository ar;
+	
+	@Autowired
+	UserRepository us;
 	
 	@Autowired
 	EnquiryRepository er;
@@ -122,5 +126,12 @@ public class ServiceImpl implements ServiceI{
 	public List<Customer> getCustomerByLoanStatus(String loanStatus) {
 		
 		return cr.getCustomerByLoanStatus(loanStatus);
+	}
+
+
+	@Override
+	public User getUserByUserAndPass(String unm, String pass) {
+		
+		return us.getByUsernameAndPassword(unm, pass);
 	}
 }

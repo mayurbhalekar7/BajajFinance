@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,18 +20,26 @@ import com.AdminModule.model.Enquiry;
 import com.AdminModule.model.User;
 import com.AdminModule.serviceI.ServiceI;
 
+@CrossOrigin("*")
 @RestController
 public class AdminController {
 
 	@Autowired
 	ServiceI si;
-	
+
    @PostMapping("/addUsers")
    public ResponseEntity<String> addUser(@RequestBody User u)
    {
 	   si.addUsers(u); 
 	   ResponseEntity<String> re=new ResponseEntity<String>("User added...",HttpStatus.ACCEPTED);
 	   return re;
+   }
+   
+   @GetMapping("/getUser/{username}/{password}")
+   public User getUserByUsernameAndPass(@PathVariable("username") String unm,@PathVariable("password") String pass)
+   {
+	 User u=  si.getUserByUserAndPass(unm,pass);
+	 return u;
    }
    
    @GetMapping("/getAllEnquiries/{choice}")
